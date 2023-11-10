@@ -1,0 +1,16 @@
+spring:
+  batch:
+    job:
+      enabled: false
+    # Tables for metadata created by Spring Boot
+    jdbc:
+      initialize-schema: always
+  mvc:
+    converters:
+      preferred-json-mapper: gson
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+batch:
+  fileLocation: cities.csv
