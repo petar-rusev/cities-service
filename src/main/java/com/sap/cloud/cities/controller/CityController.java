@@ -20,9 +20,9 @@ public class CityController {
 
     @GetMapping
     public List<City> getAllCities(
-            @RequestParam(name = "sortBy",defaultValue = "name",required = false) String sortField,
-            @RequestParam(name = "order",defaultValue = "ASC",required = false) String sortDirection,
-            @RequestParam(name = "filter",defaultValue = "",required = false) String filterByNameChunk) {
+            @RequestParam(name = "sortBy", defaultValue = "name", required = false) String sortField,
+            @RequestParam(name = "order", defaultValue = "ASC", required = false) String sortDirection,
+            @RequestParam(name = "filter", defaultValue = "", required = false) String filterByNameChunk) {
         return this.cityService.getAllCities(SortField.fromString(sortField), Sort.Direction.fromString(sortDirection), filterByNameChunk);
     }
 

@@ -38,10 +38,9 @@ public class CityService {
     }
 
     public City saveCity(City city) {
-        double density = city.getPopulation() / city.getArea();
-        // Round to two decimal places
-        BigDecimal roundedResult = new BigDecimal(density).setScale(2, RoundingMode.HALF_UP);
-        city.setDensity(roundedResult.doubleValue());
+        BigDecimal roundedDensity = BigDecimal.valueOf(city.getPopulation())
+                .divide(BigDecimal.valueOf(city.getArea()), 2, RoundingMode.HALF_UP);
+        city.setDensity(roundedDensity.doubleValue());
         return this.cityRepository.save(city);
     }
 
