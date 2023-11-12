@@ -20,6 +20,9 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 @Configuration
 public class BatchConfig {
     private final ApplicationConfig applicationConfig;
@@ -63,8 +66,10 @@ public class BatchConfig {
     @Bean
     public ItemProcessor<City, City> processor() {
         return (city) -> {
-            Double populationDensity = (double)city.getPopulation() / city.getArea();
-            city.setDensity(populationDensity);
+            double populationDensity = (double)city.getPopulation() / city.getArea();
+            // Round to two decimal places
+            BigDecimal roundedResult = new BigDecimal(populationDensity).setScale(2, RoundingMode.HALF_UP);
+            city.setDensity(roundedResult.doubleValue());
             return city;
         };
     }
@@ -75,7 +80,7 @@ public class BatchConfig {
     }
 
     @Bean
-    public Step step1() {
+    public Step importDataFromCsv() {
         return new StepBuilder("csv-step", this.jobRepository)
                 .<City, City>chunk(10, this.transactionManager)
                 .reader(reader())
@@ -87,8 +92,8 @@ public class BatchConfig {
 
     @Bean
     public Job runJob() {
-        return new JobBuilder("City", this.jobRepository)
-                .start(this.step1())
+        return new JobBuilder("Cities", this.jobRepository)
+                .start(this.importDataFromCsv())
                 .build();
     }
 

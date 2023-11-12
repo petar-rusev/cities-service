@@ -8,6 +8,8 @@ import com.sap.cloud.cities.repository.CityRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,7 +24,7 @@ public class CityService {
     }
 
     public List<City> getAllCities(SortField sortField, Sort.Direction sortDirection, String filterByNameChunk) {
-        Sort sort = Sort.by(sortDirection, sortField.getDatabaseField());
+        Sort sort = Sort.by(sortDirection, sortField.getDatabaseField().toLowerCase());
         if (filterByNameChunk != null && !filterByNameChunk.isBlank()) {
             Iterable<City> citiesData = this.cityRepository.findAll(this.generatePredicate(filterByNameChunk), sort);
             return StreamSupport.stream(citiesData.spliterator(), false).toList();
@@ -36,7 +38,10 @@ public class CityService {
     }
 
     public City saveCity(City city) {
-        city.setDensity((double) city.getPopulation() / city.getArea());
+        double density = city.getPopulation() / city.getArea();
+        // Round to two decimal places
+        BigDecimal roundedResult = new BigDecimal(density).setScale(2, RoundingMode.HALF_UP);
+        city.setDensity(roundedResult.doubleValue());
         return this.cityRepository.save(city);
     }
 
