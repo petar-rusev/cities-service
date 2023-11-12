@@ -9,7 +9,8 @@ import java.util.Locale;
 public enum SortField {
     NAME("name"),
     AREA("area"),
-    POPULATION("population");
+    POPULATION("population"),
+    DENSITY("density");
 
     private final String databaseField;
 
