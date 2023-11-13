@@ -3,7 +3,7 @@ applications:
   - name: cities-service
     memory: 1G
     instances: 1
-    path: target/cities-0.0.1-SNAPSHOT.war
+    path: target/cities-0.0.1-SNAPSHOT.jar
     buildpacks:
       - java_buildpack
     env:
