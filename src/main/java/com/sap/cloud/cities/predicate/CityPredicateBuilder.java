@@ -2,6 +2,7 @@ package com.sap.cloud.cities.predicate;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.sap.cloud.cities.enums.FilterCriteria;
 import com.sap.cloud.cities.helper.SearchCriteria;
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ public class CityPredicateBuilder {
     public CityPredicateBuilder() {
     }
 
-    public void with(String key, String operation, Object value) {
+    public void with(String key, FilterCriteria operation, Object value) {
         this.params.add(new SearchCriteria(key, operation, value));
     }
 

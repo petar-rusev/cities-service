@@ -1,5 +1,6 @@
 package com.sap.cloud.cities.helper;
 
+import com.sap.cloud.cities.enums.FilterCriteria;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -7,6 +8,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class SearchCriteria {
     private String key;
-    private String operation;
+    private FilterCriteria operation;
     private Object value;
 }
