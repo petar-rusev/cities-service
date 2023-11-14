@@ -10,10 +10,8 @@ import java.util.Locale;
 public enum FilterCriteria {
     CONTAINS("-"),
     EQUALS(":"),
-    GREATER_THAN("gt"),
-    LESS_THAN("lt"),
-    GREATER_THAN_OR_EQUAL("gte"),
-    LESS_THAN_OR_EQUAL("lte");
+    GREATER_THAN(">"),
+    LESS_THAN("<");
 
     private final String criteria;
 
@@ -23,7 +21,7 @@ public enum FilterCriteria {
                 return criteria;
             }
         }
-        throw new IllegalArgumentException(String.format("Invalid value '%s' for filters given; Has to be one of 'c, e, >, <, =>, <='", value));
+        throw new IllegalArgumentException(String.format("Invalid value '%s' for filters given; Has to be one of '-, :, >, <, =>, <='", value));
     }
 
 }
