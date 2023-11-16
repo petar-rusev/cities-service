@@ -50,7 +50,7 @@ public class CityService {
     private BooleanExpression generatePredicate(String filter) {
         CityPredicateBuilder cityPredicateBuilder = new CityPredicateBuilder();
         if (filter != null) {
-            Pattern pattern = Pattern.compile("(\\w+)([><=:\\-])(\\w+)");
+            Pattern pattern = Pattern.compile("(\\w+)([><=:\\-])(\\w+\\|?\\w+)");
             Matcher matcher = pattern.matcher(filter + ",");
 
             while (matcher.find()) {

@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.core.types.dsl.StringPath;
 import com.sap.cloud.cities.entities.City;
 import com.sap.cloud.cities.helper.SearchCriteria;
+import org.apache.commons.lang3.StringUtils;
 
 
 public class CitySearchPredicate {
@@ -13,7 +14,7 @@ public class CitySearchPredicate {
 
     public BooleanExpression getPredicate() {
         PathBuilder<City> entityPath = new PathBuilder<>(City.class, "city");
-        String criteriaValue = criteria.getValue().toString();
+        String criteriaValue = StringUtils.replace(criteria.getValue().toString(), "|", StringUtils.SPACE);
         if (isInteger(criteriaValue)) {
             NumberPath<Integer> path = entityPath.getNumber(criteria.getKey(), Integer.class);
             int value = Integer.parseInt(criteria.getValue().toString());
@@ -27,8 +28,8 @@ public class CitySearchPredicate {
         else {
             StringPath path = entityPath.getString(criteria.getKey());
             return switch (criteria.getOperation()) {
-                case EQUALS -> path.eq(criteria.getValue().toString());
-                case CONTAINS -> path.containsIgnoreCase(criteria.getValue().toString());
+                case EQUALS -> path.eq(criteriaValue);
+                case CONTAINS -> path.containsIgnoreCase(criteriaValue);
                 default -> throw new IllegalArgumentException("Operation not supported");
             };
         }
