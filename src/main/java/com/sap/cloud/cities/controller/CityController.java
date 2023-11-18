@@ -1,5 +1,6 @@
 package com.sap.cloud.cities.controller;
 
+import com.sap.cloud.cities.dto.CityDTO;
 import com.sap.cloud.cities.entities.City;
 import com.sap.cloud.cities.enums.SortField;
 import com.sap.cloud.cities.service.CityService;
@@ -19,7 +20,7 @@ public class CityController {
     }
 
     @GetMapping
-    public List<City> getAllCities(
+    public List<CityDTO> getAllCities(
             @RequestParam(name = "sortBy", defaultValue = "name", required = false) String sortField,
             @RequestParam(name = "order", defaultValue = "ASC", required = false) String sortDirection,
             @RequestParam(name = "filter", defaultValue = "", required = false) String filterQuery) {
@@ -32,7 +33,7 @@ public class CityController {
     }
 
     @PostMapping
-    public City saveCity(@RequestBody City city) {
+    public CityDTO saveCity(@RequestBody CityDTO city) {
         return this.cityService.saveCity(city);
     }
 }

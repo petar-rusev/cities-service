@@ -20,18 +20,15 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 @Configuration
 public class BatchConfig {
-    private final ApplicationConfig applicationConfig;
+    private final BatchProperties applicationConfig;
     private final CityRepository cityRepository;
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
     private static final String DELIMITER = ";";
 
-    public BatchConfig(ApplicationConfig applicationConfig, CityRepository cityRepository, JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+    public BatchConfig(BatchProperties applicationConfig, CityRepository cityRepository, JobRepository jobRepository, PlatformTransactionManager transactionManager) {
         this.applicationConfig = applicationConfig;
         this.cityRepository = cityRepository;
         this.jobRepository = jobRepository;
@@ -65,13 +62,7 @@ public class BatchConfig {
 
     @Bean
     public ItemProcessor<City, City> processor() {
-        return (city) -> {
-            double populationDensity = (double)city.getPopulation() / city.getArea();
-            // Round to two decimal places
-            BigDecimal roundedResult = new BigDecimal(populationDensity).setScale(2, RoundingMode.HALF_UP);
-            city.setDensity(roundedResult.doubleValue());
-            return city;
-        };
+        return (city) -> city;
     }
 
     @Bean

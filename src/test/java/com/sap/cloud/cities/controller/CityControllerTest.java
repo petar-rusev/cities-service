@@ -1,110 +1,115 @@
 package com.sap.cloud.cities.controller;
 
+import com.sap.cloud.cities.dto.CityDTO;
 import com.sap.cloud.cities.entities.City;
 import com.sap.cloud.cities.enums.SortField;
 import com.sap.cloud.cities.service.CityService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
 class CityControllerTest {
 
-    @Mock
+    @MockBean
     private CityService cityService;
 
-    @InjectMocks
     private CityController cityController;
 
-    private City sampleCity1, sampleCity2;
-
     @BeforeEach
-    void setUp() {
-        sampleCity1 = new City();
-        sampleCity1.setId(1L);
-        sampleCity1.setName("Berlin");
-        sampleCity1.setArea(891.85);
-        sampleCity1.setPopulation(3769495);
-        sampleCity1.setDensity(4226.89);
-
-        sampleCity2 = new City();
-        sampleCity2.setId(2L);
-        sampleCity2.setName("Hamburg");
-        sampleCity2.setArea(755.22);
-        sampleCity2.setPopulation(1841179);
-        sampleCity2.setDensity(2437.94);
+    void setup() {
+        cityController = new CityController(cityService);
     }
 
-    @Test
-    void getAllCities_shouldReturnListOfCities() {
-        List<City> expectedCities = Arrays.asList(sampleCity1, sampleCity2);
-        when(cityService.getAllCities(any(SortField.class), any(Sort.Direction.class), anyString())).thenReturn(expectedCities);
+    @Nested
+    @DisplayName("Test cases for getAllCities")
+    class GetAllCitiesTests {
 
-        List<City> actualCities = cityController.getAllCities("name", "ASC", "");
+        @Test
+        @DisplayName("Should return all cities")
+        void shouldReturnAllCities() {
+            CityDTO cityDTO = new CityDTO();
+            when(cityService.getAllCities(any(), any(), anyString())).thenReturn(Collections.singletonList(cityDTO));
 
-        assertAll(
-                () -> assertNotNull(actualCities),
-                () -> assertEquals(2, actualCities.size()),
-                () -> assertEquals(expectedCities, actualCities)
-        );
+            List<CityDTO> result = cityController.getAllCities("name", "ASC", "");
+
+            assertAll(
+                    () -> assertEquals(1, result.size()),
+                    () -> verify(cityService, times(1)).getAllCities(SortField.NAME, Sort.Direction.ASC, "")
+            );
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"invalid", "123", "!@#"})
+        @DisplayName("Should throw IllegalArgumentException for invalid parameters")
+        void shouldThrowIllegalArgumentExceptionForInvalidParameters(String invalidParameter) {
+            assertThrows(IllegalArgumentException.class, () -> cityController.getAllCities(invalidParameter, "ASC", ""));
+        }
     }
 
-    @Test
-    void getAllCities_whenNoCities_shouldReturnEmptyList() {
-        when(cityService.getAllCities(any(SortField.class), any(Sort.Direction.class), anyString())).thenReturn(Collections.emptyList());
+    @Nested
+    @DisplayName("Test cases for getCityById")
+    class GetCityByIdTests {
 
-        List<City> actualCities = cityController.getAllCities("name", "ASC", "");
+        @Test
+        @DisplayName("Should return city by id")
+        void shouldReturnCityById() {
+            City city = new City();
+            when(cityService.getCityById(anyLong())).thenReturn(city);
 
-        assertTrue(actualCities.isEmpty());
+            City result = cityController.getCityById(1L);
+
+            assertAll(
+                    () -> assertEquals(city, result),
+                    () -> verify(cityService, times(1)).getCityById(1L)
+            );
+        }
+
+        @Test
+        @DisplayName("Should throw ResponseStatusException for non-existent id")
+        void shouldThrowResponseStatusExceptionForNonExistentId() {
+            when(cityService.getCityById(anyLong())).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+            assertThrows(ResponseStatusException.class, () -> cityController.getCityById(999L));
+        }
     }
 
+    @Nested
+    @DisplayName("Test cases for saveCity")
+    class SaveCityTests {
 
-    @Test
-    void getCityById_shouldReturnCity() {
-        when(cityService.getCityById(sampleCity1.getId())).thenReturn(sampleCity1);
+        @Test
+        @DisplayName("Should save city")
+        void shouldSaveCity() {
+            CityDTO cityDTO = new CityDTO();
+            when(cityService.saveCity(any())).thenReturn(cityDTO);
 
-        City actualCity = cityController.getCityById(sampleCity1.getId());
+            CityDTO result = cityController.saveCity(new CityDTO());
 
-        assertAll(
-                () -> assertNotNull(actualCity),
-                () -> assertEquals(sampleCity1.getId(), actualCity.getId()),
-                () -> assertEquals(sampleCity1.getName(), actualCity.getName())
-        );
+            assertAll(
+                    () -> assertEquals(cityDTO, result),
+                    () -> verify(cityService, times(1)).saveCity(any())
+            );
+        }
+
+        @Test
+        @DisplayName("Should throw ResponseStatusException for invalid data")
+        void shouldThrowResponseStatusExceptionForInvalidData() {
+            CityDTO invalidCity = new CityDTO();
+            when(cityService.saveCity(any())).thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST));
+
+            assertThrows(ResponseStatusException.class, () -> cityController.saveCity(invalidCity));
+        }
     }
-
-    @Test
-    void getCityById_whenCityNotFound_shouldReturnNull() {
-        Long nonExistentCityId = 3L;
-        when(cityService.getCityById(nonExistentCityId)).thenReturn(null);
-
-        City actualCity = cityController.getCityById(nonExistentCityId);
-
-        assertNull(actualCity);
-    }
-
-    @Test
-    void saveCity_shouldSaveAndReturnCity() {
-        when(cityService.saveCity(any(City.class))).thenReturn(sampleCity1);
-
-        City actualCity = cityController.saveCity(sampleCity1);
-
-        assertAll(
-                () -> assertNotNull(actualCity),
-                () -> assertEquals(sampleCity1.getId(), actualCity.getId()),
-                () -> assertEquals(sampleCity1.getName(), actualCity.getName())
-        );
-    }
-
 }

@@ -1,17 +1,17 @@
 package com.sap.cloud.cities.service;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.sap.cloud.cities.dto.CityDTO;
 import com.sap.cloud.cities.entities.City;
 import com.sap.cloud.cities.enums.FilterCriteria;
 import com.sap.cloud.cities.enums.SortField;
 import com.sap.cloud.cities.predicate.CityPredicateBuilder;
 import com.sap.cloud.cities.repository.CityRepository;
-import org.apache.commons.lang3.math.NumberUtils;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,17 +21,20 @@ import java.util.stream.StreamSupport;
 public class CityService {
     private final CityRepository cityRepository;
 
-    public CityService(CityRepository cityRepository) {
+    private final ModelMapper modelMapper;
+
+    public CityService(CityRepository cityRepository, ModelMapper modelMapper) {
         this.cityRepository = cityRepository;
+        this.modelMapper = modelMapper;
     }
 
-    public List<City> getAllCities(SortField sortField, Sort.Direction sortDirection, String filterQuery) {
+    public List<CityDTO> getAllCities(SortField sortField, Sort.Direction sortDirection, String filterQuery) {
         Sort sort = Sort.by(sortDirection, sortField.getDatabaseField().toLowerCase());
         if (filterQuery != null && !filterQuery.isBlank()) {
             Iterable<City> citiesData = this.cityRepository.findAll(this.generatePredicate(filterQuery), sort);
-            return StreamSupport.stream(citiesData.spliterator(), false).toList();
+            return convertToDto(StreamSupport.stream(citiesData.spliterator(), false).toList());
         } else {
-            return this.cityRepository.findAll(sort);
+            return convertToDto(this.cityRepository.findAll(sort));
         }
     }
 
@@ -39,12 +42,9 @@ public class CityService {
         return this.cityRepository.findById(id).orElse(null);
     }
 
-    public City saveCity(City city) {
-        Double areaConverted= NumberUtils.createDouble(String.valueOf(city.getArea()));
-        Double populationConverted= NumberUtils.createDouble(String.valueOf(city.getPopulation()));
-        BigDecimal density = BigDecimal.valueOf(populationConverted/areaConverted).setScale(2, RoundingMode.HALF_UP);
-        city.setDensity(density.doubleValue());
-        return this.cityRepository.save(city);
+    public CityDTO saveCity(CityDTO city) {
+        City newCity = this.modelMapper.map(city, City.class);
+        return modelMapper.map(this.cityRepository.save(newCity), CityDTO.class);
     }
 
     private BooleanExpression generatePredicate(String filter) {
@@ -59,5 +59,13 @@ public class CityService {
         }
 
         return cityPredicateBuilder.build();
+    }
+
+    private List<CityDTO> convertToDto(List<City> cities) {
+        return cities.stream().map(city -> {
+            CityDTO cityDTO = modelMapper.map(city, CityDTO.class);
+            cityDTO.setDensity(city.getArea(), city.getPopulation());
+            return cityDTO;
+        }).toList();
     }
 }

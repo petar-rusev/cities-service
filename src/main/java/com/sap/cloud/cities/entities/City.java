@@ -1,9 +1,7 @@
 package com.sap.cloud.cities.entities;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +19,4 @@ public class City {
     private Double area;
 
     private Integer population;
-
-    private Double density;
 }
