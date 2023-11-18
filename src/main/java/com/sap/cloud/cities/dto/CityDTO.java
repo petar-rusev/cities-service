@@ -19,6 +19,6 @@ public class CityDTO {
 
     public void setDensity(Double area, Integer population){
         Double convertedPopulation = NumberUtils.toDouble(String.valueOf(population));
-        this.density = BigDecimal.valueOf(convertedPopulation / area).setScale(2, RoundingMode.HALF_UP).doubleValue();
+        this.density = BigDecimal.valueOf(convertedPopulation / area).setScale(1, RoundingMode.HALF_UP).doubleValue();
     }
 }

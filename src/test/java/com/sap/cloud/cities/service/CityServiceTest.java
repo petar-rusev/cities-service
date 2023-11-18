@@ -8,6 +8,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Sort;
@@ -27,7 +28,7 @@ class CityServiceTest {
     @MockBean
     private CityRepository cityRepository;
 
-    @MockBean
+    @Autowired
     private ModelMapper modelMapper;
 
     private CityService cityService;
@@ -45,16 +46,22 @@ class CityServiceTest {
         @DisplayName("Should return all cities")
         void shouldReturnAllCities() {
             City city = new City();
-            CityDTO cityDTO = new CityDTO();
-            when(cityRepository.findAll()).thenReturn(Collections.singletonList(city));
-            when(modelMapper.map(city, CityDTO.class)).thenReturn(cityDTO);
+            city.setId(1L);
+            city.setName("Berlin");
+            city.setArea(891.85);
+            city.setPopulation(3769495);
+            when(cityRepository.findAll(any(Sort.class))).thenReturn(Collections.singletonList(city));
 
             List<CityDTO> result = cityService.getAllCities(SortField.NAME, Sort.Direction.ASC, "");
 
             assertAll(
-                    () -> assertEquals(1, result.size()),
-                    () -> verify(cityRepository, times(1)).findAll()
-            );
+                    () -> assertEquals(1, result.size(), "The size of the result list should be 1"),
+                    () -> verify(cityRepository, times(1)).findAll(any(Sort.class)),
+                    () -> assertEquals(city.getId(), result.get(0).getId()),
+                    () -> assertEquals(city.getName(), result.get(0).getName()),
+                    () -> assertEquals(city.getArea(), result.get(0).getArea()),
+                    () -> assertEquals(city.getPopulation(), result.get(0).getPopulation()
+            ));
         }
 
         @ParameterizedTest
@@ -102,7 +109,6 @@ class CityServiceTest {
             City city = new City();
             CityDTO cityDTO = new CityDTO();
             when(cityRepository.save(any())).thenReturn(city);
-            when(modelMapper.map(city, CityDTO.class)).thenReturn(cityDTO);
 
             CityDTO result = cityService.saveCity(new CityDTO());
 

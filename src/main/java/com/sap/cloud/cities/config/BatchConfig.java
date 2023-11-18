@@ -20,6 +20,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.util.HashSet;
+
 @Configuration
 public class BatchConfig {
     private final BatchProperties applicationConfig;
@@ -62,7 +64,7 @@ public class BatchConfig {
 
     @Bean
     public ItemProcessor<City, City> processor() {
-        return (city) -> city;
+        return new CityProcessor();
     }
 
     @Bean
