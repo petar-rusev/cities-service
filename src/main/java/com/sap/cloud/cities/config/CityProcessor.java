@@ -9,13 +9,13 @@ import java.util.Set;
 
 public class CityProcessor implements ItemProcessor<City, City> {
 
-    private final Set<String> seenCities = new HashSet<>();
+    private final Set<City> seenCities = new HashSet<>();
 
     @Override
     public City process(@NotNull City city){
-        if (!seenCities.contains(city.getName())) {
+        if (!seenCities.contains(city)) {
             System.out.println("New city: " + city.getName());
-            seenCities.add(city.getName());
+            seenCities.add(city);
             return city;
         } else {
             System.out.println("Duplicate city: " + city.getName());
